@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import sklearn
 from sklearn.ensemble import RandomForestRegressor
@@ -55,6 +57,21 @@ def evaluate_rf(trained_model, test_x, test_y):
     return mae, rmse, r2
 
 
+def plot_feature_importance(model, feature_names, top_n=20):
+    """
+    Plots the top N feature importances
+    """
+    importances = model.feature_importances_
+    indices = np.argsort(importances)[::-1][:top_n]
+    
+    plt.figure(figsize=(10, 6))
+    plt.title(f"Top {top_n} Feature Importances")
+    plt.bar(range(top_n), importances[indices], align="center")
+    plt.xticks(range(top_n), [feature_names[i] for i in indices], rotation=90)
+    plt.tight_layout()
+    plt.show()
+
+    
 def run_model():
     """
     loads the datasets, trains the RF model, and predicts the pKas for
@@ -62,16 +79,19 @@ def run_model():
     """ 
     
     # load the datasets
-    train, test, sampl6, novartis = load_datasets('train_split.csv', 'test_split.csv', 'sampl6.csv', 'novartis.csv')   
+    train, test, sampl6, novartis = load_datasets('../datasets/train_split.csv', '../datasets/test_split.csv', '../datasets/sampl6.csv', '../datasets/novartis.csv')   
  
     # get features and exp_pKa of datasets
     train_x, train_y = preprocess_data(train)
     test_x, test_y = preprocess_data(test)
     sampl6_x, sampl6_y = preprocess_data(sampl6)
     novartis_x, novartis_y = preprocess_data(novartis)
-
+    
     # train random forest model
     trained_model = train_rf(train_x, train_y)
+    
+    # 🔥 Plot feature importances
+    plot_feature_importance(trained_model, train_x.columns)
     
     # evaluate trained model on test sets
     test_mae, test_rmse, test_r2 = evaluate_rf(trained_model, test_x, test_y)
